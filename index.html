@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>王思雨暧昧对象智能识别系统</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .card {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            margin-bottom: 30px;
+        }
+
+        .input-group {
+            margin-bottom: 25px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 600;
+            color: #333;
+            font-size: 1.1em;
+        }
+
+        .input-group textarea {
+            width: 100%;
+            min-height: 120px;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            font-family: inherit;
+            resize: vertical;
+            transition: all 0.3s;
+        }
+
+        .input-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 15px 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .result {
+            display: none;
+            margin-top: 30px;
+            padding: 25px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+        }
+
+        .result.show {
+            display: block;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .result-content {
+            white-space: pre-wrap;
+            line-height: 1.8;
+            color: #333;
+            font-size: 15px;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+            color: #666;
+        }
+
+        .loading.show {
+            display: block;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 30px;
+            height: 30px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .examples {
+            margin-top: 30px;
+        }
+
+        .examples h3 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+        }
+
+        .example-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .tag {
+            padding: 8px 16px;
+            background: #f0f0f0;
+            border-radius: 20px;
+            font-size: 14px;
+            color: #666;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .tag:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        .info-card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 25px;
+            color: white;
+            margin-top: 30px;
+        }
+
+        .info-card h3 {
+            margin-bottom: 15px;
+            font-size: 1.2em;
+        }
+
+        .info-card ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .info-card li {
+            padding: 8px 0;
+            padding-left: 25px;
+            position: relative;
+        }
+
+        .info-card li:before {
+            content: "💡";
+            position: absolute;
+            left: 0;
+        }
+
+        .error {
+            display: none;
+            padding: 15px;
+            background: #fee;
+            border-radius: 10px;
+            border-left: 4px solid #f44;
+            color: #c33;
+            margin-top: 20px;
+        }
+
+        .error.show {
+            display: block;
+        }
+
+        @media (max-width: 600px) {
+            .header h1 {
+                font-size: 1.8em;
+            }
+            .card {
+                padding: 25px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>💕 王思雨暧昧对象智能识别系统</h1>
+            <p>输入关键词或描述，快速识别是哪位暧昧对象</p>
+        </div>
+
+        <div class="card">
+            <div class="input-group">
+                <label for="query">🔍 输入描述或关键词</label>
+                <textarea id="query" placeholder="例如：国旗队的学长、KTV里搂我亲我的人、芜湖影像科工作的医生..."></textarea>
+            </div>
+
+            <button class="btn" onclick="identify()" id="submitBtn">
+                <span>🎯 开始识别</span>
+            </button>
+
+            <div class="loading" id="loading">
+                <span class="spinner"></span>
+                <span>正在识别中，请稍候...</span>
+            </div>
+
+            <div class="result" id="result">
+                <div class="result-content" id="resultContent"></div>
+            </div>
+
+            <div class="error" id="error"></div>
+
+            <div class="examples">
+                <h3>📝 快捷示例（点击使用）</h3>
+                <div class="example-tags">
+                    <span class="tag" onclick="useExample('国旗队的学长是谁？')">国旗队的学长</span>
+                    <span class="tag" onclick="useExample('芜湖影像科的医生')">芜湖影像科</span>
+                    <span class="tag" onclick="useExample('KTV里搂我亲我的人')">KTV搂亲</span>
+                    <span class="tag" onclick="useExample('陈龙池是谁？')">陈龙池</span>
+                    <span class="tag" onclick="useExample('汪超是哪个医院的？')">汪超</span>
+                    <span class="tag" onclick="useExample('丁正在KTV做了什么？')">丁正</span>
+                    <span class="tag" onclick="useExample('喜欢发长篇大论的学长')">长篇大论</span>
+                    <span class="tag" onclick="useExample('安徽省胸科医院')">胸科医院</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="info-card">
+            <h3>🌟 已录入的暧昧对象</h3>
+            <ul>
+                <li><strong>陈龙池</strong> - 骨科学长，国旗队成员，分手会打电话</li>
+                <li><strong>汪超</strong> - 影像科医生，芜湖工作，长篇大论，帮你分析片子</li>
+                <li><strong>丁正</strong> - 从杭州回来，KTV搂亲王思雨</li>
+            </ul>
+        </div>
+    </div>
+
+    <script src="config.js"></script>
+    <script>
+        // 使用配置文件中的设置
+        const API_URL = CONFIG.apiUrl;
+
+        function useExample(text) {
+            document.getElementById('query').value = text;
+            document.getElementById('query').focus();
+        }
+
+        async function identify() {
+            const query = document.getElementById('query').value.trim();
+
+            if (!query) {
+                showError('请输入描述或关键词');
+                return;
+            }
+
+            // 隐藏之前的结果和错误
+            hideResult();
+            hideError();
+
+            // 显示加载状态
+            showLoading();
+            disableButton();
+
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        messages: [
+                            {
+                                role: 'user',
+                                content: query
+                            }
+                        ]
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`请求失败: ${response.status}`);
+                }
+
+                const data = await response.json();
+
+                // 提取识别结果
+                if (data.messages && data.messages.length > 0) {
+                    const content = data.messages[0].content;
+                    showResult(content);
+                } else {
+                    throw new Error('返回数据格式错误');
+                }
+
+            } catch (error) {
+                console.error('识别失败:', error);
+                showError(`识别失败：${error.message}\n\n请检查：\n1. API服务是否已启动\n2. API地址配置是否正确`);
+            } finally {
+                hideLoading();
+                enableButton();
+            }
+        }
+
+        function showLoading() {
+            document.getElementById('loading').classList.add('show');
+        }
+
+        function hideLoading() {
+            document.getElementById('loading').classList.remove('show');
+        }
+
+        function showResult(content) {
+            document.getElementById('resultContent').textContent = content;
+            document.getElementById('result').classList.add('show');
+        }
+
+        function hideResult() {
+            document.getElementById('result').classList.remove('show');
+        }
+
+        function showError(message) {
+            document.getElementById('error').textContent = message;
+            document.getElementById('error').classList.add('show');
+        }
+
+        function hideError() {
+            document.getElementById('error').classList.remove('show');
+        }
+
+        function disableButton() {
+            document.getElementById('submitBtn').disabled = true;
+        }
+
+        function enableButton() {
+            document.getElementById('submitBtn').disabled = false;
+        }
+
+        // 支持回车提交
+        document.getElementById('query').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                identify();
+            }
+        });
+    </script>
+</body>
+</html>
